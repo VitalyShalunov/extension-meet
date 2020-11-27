@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "Covid Photographer",
+  "version": "1.0",
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "css": ["/static/css/main.css"],
+      "js": ["/static/js/main.js"]
+    }
+  ],
+  "permissions": [
+    "http://meet.google.com/*"
+  ],
+  "web_accessible_resources": [
+    "/static/media/*",
+    "/static/css/main.css"
+  ]
+}
