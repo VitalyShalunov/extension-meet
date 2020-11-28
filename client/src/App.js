@@ -16,6 +16,8 @@ class App extends Component {
             currentPoza: 0,
             time: 10,
             photoTaked: false,
+            timer: 10,
+            inProcess: false,
         };
     }
 
@@ -28,6 +30,7 @@ class App extends Component {
     changeTimer = (time) => {
       this.setState({
         time,
+        timer: time,
       });
     };
 
@@ -36,7 +39,6 @@ class App extends Component {
         this.setState({
           currentPoza: poz,
         });
-        console.log('new position setted', poz)
       }
       if (poz && poz !== this.state.currentPoza) {
         const myImg = document.getElementById('poz-image');
@@ -45,7 +47,21 @@ class App extends Component {
         }
 
         const videoTags = document.getElementsByTagName("video");
-        const myVideo = videoTags[0];
+        let myNumber;
+        [...videoTags].map(tag => {
+          tag.offsetWidth < 100
+          myNumber = tag.parentNode.dataset.ssrc;
+        })
+        let vidosik;
+        [...videoTags].map(tag => {
+          if (tag.parentNode.dataset.ssrc === myNumber && tag.offsetWidth > 100) {
+            vidosik = tag;
+          }
+        });
+        if (!vidosik) {
+          return;
+        }
+        const myVideo = vidosik;
         const img = document.createElement("img");
         img.src = url;
         img.height = myVideo.offsetHeight;
@@ -67,37 +83,56 @@ class App extends Component {
       let { time } = this.state;
       const newInterval = setInterval(() => {
         if (time > 0) {
+          this.setState({
+            timer: time,
+          });
           time -= 1;
         } else {
           clearInterval(newInterval);
           resolve();
           this.setState({
             time: 0,
+            timer: 0,
           });
         }
       }, 1000);
     });
 
     takePhoto = async () => {
+      this.setState({ inProcess: true });
         await this.awaitTimer();
 
         const videoTags = document.getElementsByTagName("video");
-        const myVideo = videoTags[0];
+        let myNumber;
+        [...videoTags].map(tag => {
+          tag.offsetWidth < 100
+          myNumber = tag.parentNode.dataset.ssrc;
+        })
+        let vidosik;
+        [...videoTags].map(tag => {
+          if (tag.parentNode.dataset.ssrc === myNumber && tag.offsetWidth > 100) {
+            vidosik = tag;
+          }
+        });
+
+        if (!vidosik) {
+          return;
+        }
+        const myVideo = vidosik;
         const canvas = document.createElement("canvas");
 
-        // scale the canvas accordingly
         canvas.width = myVideo.videoWidth;
         canvas.height = myVideo.videoHeight;
-        // draw the video at that frame
         canvas
             .getContext("2d")
             .drawImage(myVideo, 0, 0, canvas.width, canvas.height);
-        // convert it to a usable data URL
         const dataURL = canvas.toDataURL();
         sendImage(dataURL);
         this.setState({
           time: 10,
+          timer: 10,
           photoTaked: true,
+          inProcess: false,
         });
     };
 
@@ -126,6 +161,12 @@ class App extends Component {
                         </Button>
                         <SimpleSelect changeTimer={this.changeTimer} time={this.state.time}></SimpleSelect>
                       </div>
+                      {this.state.inProcess && (
+                        <div style={{position: 'absolute', fontSize: '90px', width: '100%', height: '433px', backgroundColor: 'white',
+                        textAlign: 'center', zIndex: 40, display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                          <span>{this.state.timer}</span>
+                          </div>
+                        )}
                       <VerticalTabs poza={this.state.currentPoza} changePoza={this.changePoza}/>
                       {this.state.photoTaked && (
                         <div style={{display: 'flex', height: '40px'}}>

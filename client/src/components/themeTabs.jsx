@@ -95,8 +95,6 @@ export default function VerticalTabs(props) {
     props.changePoza(newValue, url);
   };
 
-  console.log(props.poza, 'props.poza')
-
   return (
     <div className={classes.root}>
       <Tabs
