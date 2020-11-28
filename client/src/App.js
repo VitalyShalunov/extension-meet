@@ -4,6 +4,7 @@ import VerticalTabs from "./components/themeTabs";
 import "./App.css";
 import logo from "./img/theme/brand.png";
 import { Button } from "@material-ui/core";
+import SimpleSelect from "./components/selectTIme";
 
 const prefix = "chrome-extension://ikiodbafbclkmhbnppnihfflmicjihdn";
 
@@ -13,12 +14,20 @@ class App extends Component {
         this.state = {
             toggle: true,
             currentPoza: 0,
+            time: 10,
+            photoTaked: false,
         };
     }
 
     changeToggleState = () => {
       this.setState({
         toggle: !this.state.toggle,
+      });
+    };
+
+    changeTimer = (time) => {
+      this.setState({
+        time,
       });
     };
 
@@ -54,16 +63,24 @@ class App extends Component {
       return;
     };
 
-    takePhotoWithTimer = () => {
-      setInterval(() => {
-        if (true) {
-
+    awaitTimer = () => new Promise((resolve) => {
+      let { time } = this.state;
+      const newInterval = setInterval(() => {
+        if (time > 0) {
+          time -= 1;
+        } else {
+          clearInterval(newInterval);
+          resolve();
+          this.setState({
+            time: 0,
+          });
         }
-      }, 1000)
-    };
+      }, 1000);
+    });
 
-    takePhoto = () => {
-        console.log("clicked");
+    takePhoto = async () => {
+        await this.awaitTimer();
+
         const videoTags = document.getElementsByTagName("video");
         const myVideo = videoTags[0];
         const canvas = document.createElement("canvas");
@@ -78,10 +95,10 @@ class App extends Component {
         // convert it to a usable data URL
         const dataURL = canvas.toDataURL();
         sendImage(dataURL);
-        var img = document.createElement("img");
-        img.src = dataURL;
-
-        document.body.appendChild(img);
+        this.setState({
+          time: 10,
+          photoTaked: true,
+        });
     };
 
     render() {
@@ -94,7 +111,7 @@ class App extends Component {
                       onClick={() => this.changeToggleState()}
                     />
                 )) || (
-                    <div style={{ backgroundColor: 'violet', border: '1px solid gray' }}>
+                    <div style={{ backgroundColor: "rgb(210,200,255)", border: '1px solid gray' }}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <img
                           style={{ width: '60px', height: '50px', float: 'left' }}
@@ -103,16 +120,22 @@ class App extends Component {
                         />
                         <p style={{ fontSize: '20px', margin: 'unset', textAlign: 'center' }}>COVID PHOTOGRAPHER</p>
                       </div>
-                      <div>
+                      <div style={{display: 'flex'}}>
                         <Button onClick={() => this.takePhoto()}>
                           Take photo
                         </Button>
-                        <Button onClick={() => this.takePhotoWithTimer()}>
-                          Take photo with timer
-                        </Button>
+                        <SimpleSelect changeTimer={this.changeTimer} time={this.state.time}></SimpleSelect>
                       </div>
-                        <VerticalTabs poza={this.state.currentPoza} changePoza={this.changePoza}/>
+                      <VerticalTabs poza={this.state.currentPoza} changePoza={this.changePoza}/>
+                      {this.state.photoTaked && (
+                        <div style={{display: 'flex', height: '40px'}}>
+                          <a href="https://vitalyshalunov.github.io/collage/" target="_blank"
+                            style={{margin: 'auto', textDecoration: 'none', height: '20px', fontSize: '18px'}}
+                          >Collect collage</a>
+                        </div>
+                      )}
                     </div>
+
                 )}
             </div>
         );
